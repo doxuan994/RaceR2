@@ -192,6 +192,7 @@ public class RegFaces extends AppCompatActivity {
 
         // Find the correct root path where our trained face model is stored.
         String personName = "Tom Cruise";
+        int personId = 1;
         String photosFolderPath = root + "/saved_images/tom_cruise";
         File photosFolder = new File(photosFolderPath);
         File f = new File(photosFolder, TrainFaces.EIGEN_FACES_CLASSIFIER);
@@ -199,8 +200,8 @@ public class RegFaces extends AppCompatActivity {
         // Loads a persisted model and state from a given XML or YAML file.
         faceRecognizer.read(f.getAbsolutePath());
 
-        opencv_core.Mat detectedFace = new opencv_core.Mat(greyMat, dadosFace);
-        resize(detectedFace, detectedFace, new opencv_core.Size(IMG_SIZE, IMG_SIZE));
+        Mat detectedFace = new Mat(greyMat, dadosFace);
+        resize(detectedFace, detectedFace, new Size(IMG_SIZE, IMG_SIZE));
 
         IntPointer label = new IntPointer(1);
         DoublePointer reliability = new DoublePointer(1);
@@ -216,6 +217,7 @@ public class RegFaces extends AppCompatActivity {
 
             // Find the correct root path where our trained face model is stored.
             personName = "Katie Holmes";
+            personId = 2;
             photosFolderPath = root + "/saved_images/katie_holmes";
             photosFolder = new File(photosFolderPath);
             f = new File(photosFolder, TrainFaces.EIGEN_FACES_CLASSIFIER);
@@ -223,8 +225,8 @@ public class RegFaces extends AppCompatActivity {
             // Loads a persisted model and state from a given XML or YAML file.
             faceRecognizer.read(f.getAbsolutePath());
 
-            detectedFace = new opencv_core.Mat(greyMat, dadosFace);
-            resize(detectedFace, detectedFace, new opencv_core.Size(IMG_SIZE, IMG_SIZE));
+            detectedFace = new Mat(greyMat, dadosFace);
+            resize(detectedFace, detectedFace, new Size(IMG_SIZE, IMG_SIZE));
 
             label = new IntPointer(1);
             reliability = new DoublePointer(1);
@@ -233,8 +235,7 @@ public class RegFaces extends AppCompatActivity {
             // Display on the text view what we found.
             prediction = label.get(0);
             acceptanceLevel = (int) reliability.get(0);
-
-
+            
         }
 
         // Display the prediction.
@@ -243,7 +244,7 @@ public class RegFaces extends AppCompatActivity {
             tv.setText("Unknown ");
         } else {
             // Display the information for the matching image.
-            tv.setText("A match is found " + "Hi, " + personName +  " " + acceptanceLevel);
+            tv.setText("A match is found " + "Hi, " + personName +  " " + acceptanceLevel + " Person ID: " + personId);
         }
 
     }
