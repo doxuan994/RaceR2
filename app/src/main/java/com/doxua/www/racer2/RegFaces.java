@@ -49,6 +49,7 @@ public class RegFaces extends AppCompatActivity {
     // Views.
     private ImageView imageView;
     private TextView tv;
+    private TextView result_information;
 
     // Face Detection.
     private CascadeClassifier faceDetector;
@@ -65,6 +66,7 @@ public class RegFaces extends AppCompatActivity {
         // Create the image view and text view.
         imageView = (ImageView) findViewById(R.id.imageView);
         tv = (TextView) findViewById(R.id.predict_faces);
+        result_information = findViewById(R.id.result);
 
         // Pick an image and recognize.
         Button pickImageButton = (Button) findViewById(R.id.btnGallery);
@@ -186,15 +188,11 @@ public class RegFaces extends AppCompatActivity {
      * @param greyMat
      */
     void recognize(Rect dadosFace, Mat greyMat, TextView tv) {
+        int personId = 0;
 
-        // Find the root path.
-        String root = Environment.getExternalStorageDirectory().toString();
-
-        // Find the correct root path where our trained face model is stored.
+       // Find the correct root path where our trained face model is stored.
         String personName = "Tom Cruise";
-        int personId = 1;
-        String photosFolderPath = root + "/saved_images/tom_cruise";
-        File photosFolder = new File(photosFolderPath);
+        File photosFolder = new File(new File(Environment.getExternalStorageDirectory(), "saved_images"), "tom_cruise");
         File f = new File(photosFolder, TrainFaces.EIGEN_FACES_CLASSIFIER);
 
         // Loads a persisted model and state from a given XML or YAML file.
@@ -211,15 +209,19 @@ public class RegFaces extends AppCompatActivity {
         int prediction = label.get(0);
         int acceptanceLevel = (int) reliability.get(0);
 
+
+        // Known for sure this is Tom Cruise.
+        // Assign person id 1 for displaying his information.
+        if (prediction == 1 && acceptanceLevel < ACCEPT_LEVEL) {
+            personId = 1;
+        }
+
         // If a face is not found but we have its model.
         // Read the next model to find the matching.
         if (prediction <= -1 || acceptanceLevel >= ACCEPT_LEVEL) {
 
-            // Find the correct root path where our trained face model is stored.
             personName = "Katie Holmes";
-            personId = 2;
-            photosFolderPath = root + "/saved_images/katie_holmes";
-            photosFolder = new File(photosFolderPath);
+            photosFolder = new File(new File(Environment.getExternalStorageDirectory(), "saved_images"), "katie_holmes");
             f = new File(photosFolder, TrainFaces.EIGEN_FACES_CLASSIFIER);
 
             // Loads a persisted model and state from a given XML or YAML file.
@@ -235,6 +237,10 @@ public class RegFaces extends AppCompatActivity {
             // Display on the text view what we found.
             prediction = label.get(0);
             acceptanceLevel = (int) reliability.get(0);
+
+            if (prediction > -1 && acceptanceLevel < ACCEPT_LEVEL) {
+                personId = 2;
+            }
             
         }
 
@@ -242,9 +248,20 @@ public class RegFaces extends AppCompatActivity {
         if (prediction <= -1 || acceptanceLevel >= ACCEPT_LEVEL) {
             // Display on text view, not matching or unknown person.
             tv.setText("Unknown ");
+            result_information.setText("");
         } else {
             // Display the information for the matching image.
             tv.setText("A match is found " + "Hi, " + personName +  " " + acceptanceLevel + " Person ID: " + personId);
+
+            if (personId > 0) {
+                DatabaseAccess databaseAccess = DatabaseAccess.getInstance(getApplicationContext());
+                databaseAccess.open();
+
+                String info = databaseAccess.getInformation(personId);
+                result_information.setText(info);
+
+                databaseAccess.close();
+            }
         }
 
     }
